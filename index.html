@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  height: 100%;
+  margin: 0;
+}
+
+
+/*Задаём глобальные параметры*/
+
+body {
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  border: 1px solid white;
+}
+
+.buttons {
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.btn {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #fff;
+  color: #fff;
+  font-size: 2em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: #f00;
+  color: #f00;
+}
+
+.btn:first-child {
+  grid-column: 2 / 3;
+}
+
+.btn:nth-child(2) {
+  grid-column: 1 / 2;
+}
+</style>
+<script>
+window.onload = function() {
+  var canvas = document.getElementById('game');
+  var context = canvas.getContext('2d');
+  var grid = 16;
+  var count = 0;
+  var snake = {
+    x: 160,
+    y: 160,
+    dx: grid,
+    dy: 0,
+    cells: [],
+    maxCells: 4
+  };
+  var apple = {
+    x: 320,
+    y: 320
+  };
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    if (++count < 3.4) {
+      return;
+    }
+    count = 0;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    snake.x += snake.dx;
+    snake.y += snake.dy;
+    if (snake.x < 0) {
+      snake.x = canvas.width - grid;
+    } else if (snake.x >= canvas.width) {
+      snake.x = 0;
+    }
+    if (snake.y < 0) {
+      snake.y = canvas.height - grid;
+    } else if (snake.y >= canvas.height) {
+      snake.y = 0;
+    }
+    snake.cells.unshift({
+      x: snake.x,
+      y: snake.y
+    });
+    if (snake.cells.length > snake.maxCells) {
+      snake.cells.pop();
+    }
+    context.fillStyle = 'red';
+    context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+    context.fillStyle = 'green';
+    snake.cells.forEach(function(cell, index) {
+      context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+      if (cell.x === apple.x && cell.y === apple.y) {
+        snake.maxCells++;
+        apple.x = getRandomInt(0, 25) * grid;
+        apple.y = getRandomInt(0, 25) * grid;
+      }
+      for (var i = index + 1; i < snake.cells.length; i++) {
+        if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+          snake.x = 160;
+          snake.y = 160;
+          snake.cells = [];
+          snake.maxCells = 4;
+          snake.dx = grid;
+          snake.dy = 0;
+          apple.x = getRandomInt(0, 25) * grid;
+          apple.y = getRandomInt(0, 25) * grid;
+        }
+      }
+    });
+  }
+
+
+  function wayToMove(cX, cY) {
+    snake.dx = cX;
+    snake.dy = cY;
+  }
+
+
+  //Нажатие клавиш
+  document.addEventListener('keydown', function(e) {
+    //На клавиатуре нажата стрелка влево
+    if (e["which"] === 37 && snake.dx === 0) {
+      wayToMove(-grid, 0);
+    }
+    //На клавиатуре нажата стрелка вверх
+    else if (e["which"] === 38 && snake.dy === 0) {
+      wayToMove(0, -grid);
+    }
+    //На клавиатуре нажата стрелка вправо
+    else if (e["which"] === 39 && snake.dx === 0) {
+      wayToMove(grid, 0);
+    }
+    //На клавиатуре нажата стрелка вниз
+    else if (e["which"] === 40 && snake.dy === 0) {
+      wayToMove(0, grid);
+    }
+  });
+
+
+
+
+  var upBtn = document.getElementById("btn-up"),
+    downBtn = document.getElementById("btn-down"),
+    leftBtn = document.getElementById("btn-left"),
+    rightBtn = document.getElementById("btn-right");
+
+  upBtn.addEventListener("click", function() {
+    (snake.dy === 0) ? wayToMove(0, -grid): false;
+  });
+  downBtn.addEventListener("click", function() {
+    (snake.dy === 0) ? wayToMove(0, grid): false;
+  });
+  leftBtn.addEventListener("click", function() {
+    (snake.dx === 0) ? wayToMove(-grid, 0): false;
+  });
+  rightBtn.addEventListener("click", function() {
+    (snake.dx === 0) ? wayToMove(grid, 0): false;
+  });
+
+  requestAnimationFrame(loop);
+}
+</script>
+</head>
+<canvas width="400" height="400" id="game"></canvas>
+<div class="buttons">
+  <div id="btn-up" class="btn">&uarr;</div>
+  <div id="btn-left" class="btn">&larr;</div>
+  <div id="btn-down" class="btn">&darr;</div>
+  <div id="btn-right" class="btn">&rarr;</div>
+</div>
